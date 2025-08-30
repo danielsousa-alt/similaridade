@@ -72,19 +72,22 @@ st.markdown("""
     .header-title {
         color: #ffffff !important;
         font-size: 2.5rem;
-        font-weight: bold;
+        font-weight: 900 !important;
         margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
         text-rendering: optimizeLegibility;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
     }
     
     .header-subtitle {
         color: #ffffff !important;
         font-size: 1.1rem;
         margin: 0.5rem 0 0 0;
-        opacity: 1;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        opacity: 1 !important;
+        font-weight: 600 !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
         text-rendering: optimizeLegibility;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
     }
     
     /* CARDS SIMPLES */
