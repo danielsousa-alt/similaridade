@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Classificador Manual para Re-treinamento - Versão com Contraste Corrigido
+Classificador Manual - Versão com Tema Claro Forçado
 Sistema para classificação humana de formulários
 """
 
@@ -15,7 +15,7 @@ import json
 # CONFIGURAÇÃO E ESTILO
 # ========================================
 
-# Configuração da página
+# Configuração da página com tema claro
 st.set_page_config(
     page_title="Classificador Manual",
     page_icon="🎯",
@@ -23,119 +23,114 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS customizado com contraste melhorado
+# CSS para forçar tema claro e máximo contraste
 st.markdown("""
 <style>
-    /* Configurações gerais para melhor contraste */
+    /* FORÇAR TEMA CLARO */
+    .stApp {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    
+    /* Sidebar também clara */
+    .css-1d391kg {
+        background-color: #f8f9fa !important;
+    }
+    
+    /* Container principal */
     .main .block-container {
+        background-color: #ffffff !important;
+        color: #000000 !important;
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
     
+    /* TODOS OS TEXTOS EM PRETO */
+    div, p, span, label, h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
+    }
+    
     /* Header principal */
     .main-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
         color: white;
         margin-bottom: 2rem;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     }
     
     .main-header h1 {
         color: white !important;
         margin: 0;
-        font-size: 2rem;
+        font-size: 2.5rem;
         font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
     .main-header p {
         color: white !important;
         margin: 0.5rem 0 0 0;
-        opacity: 0.9;
+        opacity: 0.95;
+        font-size: 1.1rem;
     }
     
-    /* Cards de informação com melhor contraste */
+    /* Cards com fundo branco e texto preto */
     .info-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
+        background: #ffffff !important;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
         margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
     .info-card h3 {
-        color: #2c3e50 !important;
+        color: #1a1a1a !important;
         margin-top: 0;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: bold;
     }
     
     .info-card p {
-        color: #34495e !important;
+        color: #2c2c2c !important;
         margin: 0.5rem 0;
+        font-size: 1rem;
     }
     
     .info-card strong {
-        color: #2c3e50 !important;
+        color: #000000 !important;
         font-weight: bold;
-    }
-    
-    /* Card da IA */
-    .ai-card {
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #007bff;
-        margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    .ai-card h4 {
-        color: #007bff !important;
-        margin-top: 0;
-        font-weight: bold;
-    }
-    
-    .ai-card p {
-        color: #495057 !important;
     }
     
     /* Card do usuário */
     .user-card {
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #28a745;
+        background: #f8f9fa !important;
+        padding: 2rem;
+        border-radius: 12px;
+        border-left: 5px solid #28a745;
         margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
-    .user-card h3 {
-        color: #28a745 !important;
-        margin-top: 0;
-        font-weight: bold;
-    }
-    
-    .user-card h4 {
-        color: #28a745 !important;
+    .user-card h3, .user-card h4 {
+        color: #1e7e34 !important;
         margin-top: 0;
         font-weight: bold;
     }
     
     .user-card p {
-        color: #495057 !important;
+        color: #2c2c2c !important;
     }
     
-    /* Alertas com melhor contraste */
+    /* Alertas */
     .success-alert {
-        background: #d4edda;
+        background: #d4edda !important;
         color: #155724 !important;
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #c3e6cb;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #c3e6cb;
         margin: 1rem 0;
     }
     
@@ -145,137 +140,163 @@ st.markdown("""
         font-weight: bold;
     }
     
-    .warning-alert {
-        background: #fff3cd;
-        color: #856404 !important;
-        padding: 1.5rem;
+    /* INPUTS E FORMULÁRIOS */
+    .stSelectbox > div > div {
+        background: #ffffff !important;
+        border: 3px solid #333333 !important;
         border-radius: 8px;
-        border: 1px solid #ffeaa7;
-        margin: 1rem 0;
+        color: #000000 !important;
     }
     
-    /* Métricas com melhor contraste */
-    .metric-container {
-        background: white;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        text-align: center;
-        border: 1px solid #e0e0e0;
+    .stTextInput > div > div {
+        background: #ffffff !important;
+        border: 3px solid #333333 !important;
+        border-radius: 8px;
+        color: #000000 !important;
     }
     
-    /* Botões melhorados */
+    .stTextArea > div > div {
+        background: #ffffff !important;
+        border: 3px solid #333333 !important;
+        border-radius: 8px;
+    }
+    
+    .stTextArea textarea {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: none !important;
+        font-size: 14px !important;
+    }
+    
+    /* LABELS DOS INPUTS */
+    .stSelectbox > label,
+    .stTextInput > label,
+    .stTextArea > label,
+    .stSlider > label,
+    .stNumberInput > label {
+        color: #000000 !important;
+        font-weight: bold !important;
+        font-size: 1.1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* BOTÕES */
     .stButton > button {
+        background: #ffffff !important;
+        color: #007bff !important;
+        border: 3px solid #007bff !important;
         border-radius: 25px;
-        border: 2px solid #007bff;
         padding: 0.75rem 2rem;
-        font-weight: 600;
+        font-weight: bold;
+        font-size: 1rem;
         transition: all 0.3s;
-        background: white;
-        color: #007bff;
     }
     
     .stButton > button:hover {
-        background: #007bff;
-        color: white;
+        background: #007bff !important;
+        color: #ffffff !important;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
     }
     
     /* Botão primário */
     .stButton > button[kind="primary"] {
-        background: #007bff;
-        color: white;
-        border: 2px solid #007bff;
+        background: #007bff !important;
+        color: #ffffff !important;
+        border: 3px solid #007bff !important;
     }
     
-    .stButton > button[kind="primary"]:hover {
-        background: #0056b3;
-        border: 2px solid #0056b3;
-    }
-    
-    /* Melhorar contraste dos inputs */
-    .stSelectbox > div > div {
-        background: white;
-        border: 2px solid #ced4da;
-        border-radius: 8px;
-    }
-    
-    .stTextInput > div > div {
-        background: white;
-        border: 2px solid #ced4da;
-        border-radius: 8px;
-    }
-    
-    .stTextArea > div > div {
-        background: white;
-        border: 2px solid #ced4da;
-        border-radius: 8px;
-    }
-    
-    /* Labels mais visíveis */
-    .stSelectbox > label,
-    .stTextInput > label,
-    .stTextArea > label,
-    .stSlider > label {
-        color: #2c3e50 !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-    }
-    
-    /* Melhorar contraste do slider */
-    .stSlider > div > div > div > div {
-        background: #007bff;
-    }
-    
-    /* Informações melhor visíveis */
-    .stInfo {
-        background: #d1ecf1;
-        border: 1px solid #bee5eb;
-        color: #0c5460 !important;
-    }
-    
-    .stSuccess {
-        background: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724 !important;
-    }
-    
-    .stWarning {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        color: #856404 !important;
-    }
-    
-    .stError {
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24 !important;
-    }
-    
-    /* Melhorar métricas do Streamlit */
+    /* MÉTRICAS */
     [data-testid="metric-container"] {
-        background: white;
-        border: 1px solid #e0e0e0;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: #ffffff !important;
+        border: 2px solid #333333 !important;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     
     [data-testid="metric-container"] > div {
-        color: #2c3e50 !important;
+        color: #000000 !important;
     }
     
-    /* Texto da descrição mais legível */
-    .stTextArea textarea {
-        color: #2c3e50 !important;
-        background: white !important;
-        border: 2px solid #ced4da !important;
+    [data-testid="metric-container"] [data-testid="metric-container-0"] {
+        color: #000000 !important;
     }
     
-    /* Progress bar mais visível */
-    .stProgress > div > div {
-        background: #007bff;
+    /* ALERTAS DO STREAMLIT */
+    .stInfo {
+        background: #cce7ff !important;
+        border: 2px solid #0066cc !important;
+        color: #003366 !important;
+        border-radius: 8px;
+    }
+    
+    .stSuccess {
+        background: #d4edda !important;
+        border: 2px solid #28a745 !important;
+        color: #155724 !important;
+        border-radius: 8px;
+    }
+    
+    .stWarning {
+        background: #fff3cd !important;
+        border: 2px solid #ffc107 !important;
+        color: #856404 !important;
+        border-radius: 8px;
+    }
+    
+    .stError {
+        background: #f8d7da !important;
+        border: 2px solid #dc3545 !important;
+        color: #721c24 !important;
+        border-radius: 8px;
+    }
+    
+    /* SLIDER */
+    .stSlider > div > div > div > div {
+        background: #007bff !important;
+    }
+    
+    /* DATAFRAME */
+    .stDataFrame {
+        background: #ffffff !important;
+        border: 2px solid #333333 !important;
+        border-radius: 8px;
+    }
+    
+    /* MARKDOWN */
+    .stMarkdown {
+        color: #000000 !important;
+    }
+    
+    /* SIDEBAR */
+    .css-1d391kg {
+        background: #f8f9fa !important;
+        color: #000000 !important;
+    }
+    
+    /* NUMBER INPUT */
+    .stNumberInput > div > div {
+        background: #ffffff !important;
+        border: 3px solid #333333 !important;
+        border-radius: 8px;
+    }
+    
+    .stNumberInput input {
+        color: #000000 !important;
+        background: #ffffff !important;
+    }
+    
+    /* FORÇAR COR PRETA EM TUDO */
+    * {
+        color: #000000 !important;
+    }
+    
+    /* Exceções para elementos que DEVEM ser coloridos */
+    .main-header, .main-header h1, .main-header p,
+    .stButton > button[kind="primary"],
+    .user-card h3, .user-card h4 {
+        color: inherit !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -286,10 +307,8 @@ st.markdown("""
 
 # Arquivo de dados
 DADOS_FILE = "dados_embbeding.csv"
-CONTRIBUTIONS_FILE = "contribuicoes_usuarios.csv"
-ANALYZED_FILE = "formularios_analisados.json"
 
-# Categorias organizadas para melhor UX
+# Categorias organizadas
 CATEGORIAS = {
     "🏢 Administração e RH": [
         "Gestão de folha de pagamento",
@@ -357,27 +376,6 @@ CATEGORIAS = {
 # ========================================
 
 @st.cache_data
-def carregar_formularios_analisados():
-    """Carrega lista de formulários já analisados"""
-    try:
-        if hasattr(st.session_state, 'formularios_analisados'):
-            return st.session_state.formularios_analisados
-        return {}
-    except:
-        return {}
-
-def salvar_formulario_analisado(forms_number, usuario):
-    """Salva formulário como analisado"""
-    if 'formularios_analisados' not in st.session_state:
-        st.session_state.formularios_analisados = {}
-    
-    if str(forms_number) not in st.session_state.formularios_analisados:
-        st.session_state.formularios_analisados[str(forms_number)] = []
-    
-    if usuario not in st.session_state.formularios_analisados[str(forms_number)]:
-        st.session_state.formularios_analisados[str(forms_number)].append(usuario)
-
-@st.cache_data
 def carregar_dados():
     """Carrega dados dos formulários"""
     try:
@@ -410,6 +408,17 @@ def salvar_contribuicao(dados_contribuicao):
     
     st.session_state.contribuicoes.append(dados_contribuicao)
 
+def salvar_formulario_analisado(forms_number, usuario):
+    """Salva formulário como analisado"""
+    if 'formularios_analisados' not in st.session_state:
+        st.session_state.formularios_analisados = {}
+    
+    if str(forms_number) not in st.session_state.formularios_analisados:
+        st.session_state.formularios_analisados[str(forms_number)] = []
+    
+    if usuario not in st.session_state.formularios_analisados[str(forms_number)]:
+        st.session_state.formularios_analisados[str(forms_number)].append(usuario)
+
 def extrair_nome_atividade(forms_text):
     """Extrai nome da atividade de forma inteligente"""
     if pd.isna(forms_text) or not forms_text:
@@ -424,78 +433,6 @@ def extrair_nome_atividade(forms_text):
     return f"📋 {nome}" if nome else "📋 Sem nome definido"
 
 # ========================================
-# COMPONENTES UI
-# ========================================
-
-def render_header():
-    """Renderiza header principal"""
-    st.markdown("""
-    <div class="main-header">
-        <h1>🎯 Classificador Manual Inteligente</h1>
-        <p>Sistema para classificação humana e re-treinamento do modelo</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-def render_user_welcome(usuario):
-    """Renderiza boas-vindas do usuário"""
-    col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        st.markdown(f"""
-        <div class="user-card">
-            <h3>👋 Bem-vindo, {usuario}!</h3>
-            <p>Vamos classificar alguns formulários para melhorar o modelo de IA?</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        if st.button("🚪 Trocar Usuário", help="Clique para trocar de usuário"):
-            for key in st.session_state.keys():
-                del st.session_state[key]
-            st.rerun()
-
-def render_statistics(df_total, df_disponivel, usuario):
-    """Renderiza estatísticas em cards visuais"""
-    # Calcular estatísticas
-    analisados = st.session_state.get('formularios_analisados', {})
-    total_analisados = len([f for f, users in analisados.items() if usuario in users])
-    
-    contribuicoes_usuario = len([c for c in st.session_state.get('contribuicoes', []) if c.get('usuario') == usuario])
-    
-    # Layout em 4 colunas
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            label="📊 Total de Formulários",
-            value=f"{len(df_total):,}",
-            help="Total de formulários no sistema"
-        )
-    
-    with col2:
-        st.metric(
-            label="🎯 Disponíveis para Você",
-            value=f"{len(df_disponivel):,}",
-            help="Formulários que você ainda não analisou"
-        )
-    
-    with col3:
-        progresso = (total_analisados / len(df_total)) * 100 if len(df_total) > 0 else 0
-        st.metric(
-            label="✅ Você Analisou",
-            value=f"{total_analisados:,}",
-            delta=f"{progresso:.1f}% do total",
-            help="Número de formulários que você já analisou"
-        )
-    
-    with col4:
-        st.metric(
-            label="💾 Contribuições Salvas",
-            value=f"{contribuicoes_usuario:,}",
-            help="Suas classificações salvas no sistema"
-        )
-
-# ========================================
 # FUNÇÃO PRINCIPAL
 # ========================================
 
@@ -507,7 +444,12 @@ def main():
         st.stop()
 
     # Header
-    render_header()
+    st.markdown("""
+    <div class="main-header">
+        <h1>🎯 Classificador Manual Inteligente</h1>
+        <p>Sistema para classificação humana e re-treinamento do modelo</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Autenticação do usuário
     if 'usuario_autenticado' not in st.session_state:
@@ -536,7 +478,22 @@ def main():
     
     # Usuário autenticado
     usuario = st.session_state.usuario
-    render_user_welcome(usuario)
+    
+    # Boas-vindas
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.markdown(f"""
+        <div class="user-card">
+            <h3>👋 Bem-vindo, {usuario}!</h3>
+            <p>Vamos classificar alguns formulários para melhorar o modelo de IA?</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        if st.button("🚪 Trocar Usuário", help="Clique para trocar de usuário"):
+            for key in st.session_state.keys():
+                del st.session_state[key]
+            st.rerun()
     
     # Carregar dados
     df = carregar_dados()
@@ -548,7 +505,24 @@ def main():
     df_disponivel = filtrar_formularios_nao_analisados(df, usuario)
     
     # Estatísticas
-    render_statistics(df, df_disponivel, usuario)
+    analisados = st.session_state.get('formularios_analisados', {})
+    total_analisados = len([f for f, users in analisados.items() if usuario in users])
+    contribuicoes_usuario = len([c for c in st.session_state.get('contribuicoes', []) if c.get('usuario') == usuario])
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("📊 Total de Formulários", f"{len(df):,}")
+    
+    with col2:
+        st.metric("🎯 Disponíveis para Você", f"{len(df_disponivel):,}")
+    
+    with col3:
+        progresso = (total_analisados / len(df)) * 100 if len(df) > 0 else 0
+        st.metric("✅ Você Analisou", f"{total_analisados:,}", f"{progresso:.1f}% do total")
+    
+    with col4:
+        st.metric("💾 Contribuições Salvas", f"{contribuicoes_usuario:,}")
     
     # Verificar se há formulários disponíveis
     if df_disponivel.empty:
@@ -568,7 +542,6 @@ def main():
             df_contrib = pd.DataFrame(suas_contrib)
             st.dataframe(df_contrib, use_container_width=True)
             
-            # Botão para baixar contribuições
             csv = df_contrib.to_csv(index=False)
             st.download_button(
                 label="📥 Baixar Minhas Contribuições (CSV)",
