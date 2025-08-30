@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Classificador Manual para Re-treinamento - Versão Completa
+Classificador Manual para Re-treinamento - Versão com Contraste Corrigido
 Sistema para classificação humana de formulários
 """
 
@@ -23,78 +23,259 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS customizado para melhor UX
+# CSS customizado com contraste melhorado
 st.markdown("""
 <style>
+    /* Configurações gerais para melhor contraste */
+    .main .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    
     /* Header principal */
     .main-header {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 1rem;
+        padding: 1.5rem;
         border-radius: 10px;
         color: white;
         margin-bottom: 2rem;
         text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
-    /* Cards de informação */
+    .main-header h1 {
+        color: white !important;
+        margin: 0;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    
+    .main-header p {
+        color: white !important;
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+    }
+    
+    /* Cards de informação com melhor contraste */
     .info-card {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #007bff;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        margin: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .info-card h3 {
+        color: #2c3e50 !important;
+        margin-top: 0;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    .info-card p {
+        color: #34495e !important;
         margin: 0.5rem 0;
     }
     
+    .info-card strong {
+        color: #2c3e50 !important;
+        font-weight: bold;
+    }
+    
+    /* Card da IA */
     .ai-card {
-        background: #e3f2fd;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #2196f3;
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid #007bff;
+        margin: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
+    .ai-card h4 {
+        color: #007bff !important;
+        margin-top: 0;
+        font-weight: bold;
+    }
+    
+    .ai-card p {
+        color: #495057 !important;
+    }
+    
+    /* Card do usuário */
     .user-card {
-        background: #f3e5f5;
-        padding: 1rem;
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid #28a745;
+        margin: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .user-card h3 {
+        color: #28a745 !important;
+        margin-top: 0;
+        font-weight: bold;
+    }
+    
+    .user-card h4 {
+        color: #28a745 !important;
+        margin-top: 0;
+        font-weight: bold;
+    }
+    
+    .user-card p {
+        color: #495057 !important;
+    }
+    
+    /* Alertas com melhor contraste */
+    .success-alert {
+        background: #d4edda;
+        color: #155724 !important;
+        padding: 1.5rem;
         border-radius: 8px;
-        border-left: 4px solid #9c27b0;
+        border: 1px solid #c3e6cb;
+        margin: 1rem 0;
     }
     
-    /* Botões personalizados */
-    .stButton > button {
-        border-radius: 20px;
-        border: none;
-        padding: 0.5rem 2rem;
-        font-weight: 600;
-        transition: all 0.3s;
+    .success-alert h3 {
+        color: #155724 !important;
+        margin-top: 0;
+        font-weight: bold;
     }
     
-    /* Métricas */
+    .warning-alert {
+        background: #fff3cd;
+        color: #856404 !important;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #ffeaa7;
+        margin: 1rem 0;
+    }
+    
+    /* Métricas com melhor contraste */
     .metric-container {
         background: white;
         padding: 1rem;
         border-radius: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         text-align: center;
+        border: 1px solid #e0e0e0;
     }
     
-    /* Success alert */
-    .success-alert {
+    /* Botões melhorados */
+    .stButton > button {
+        border-radius: 25px;
+        border: 2px solid #007bff;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        background: white;
+        color: #007bff;
+    }
+    
+    .stButton > button:hover {
+        background: #007bff;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    }
+    
+    /* Botão primário */
+    .stButton > button[kind="primary"] {
+        background: #007bff;
+        color: white;
+        border: 2px solid #007bff;
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: #0056b3;
+        border: 2px solid #0056b3;
+    }
+    
+    /* Melhorar contraste dos inputs */
+    .stSelectbox > div > div {
+        background: white;
+        border: 2px solid #ced4da;
+        border-radius: 8px;
+    }
+    
+    .stTextInput > div > div {
+        background: white;
+        border: 2px solid #ced4da;
+        border-radius: 8px;
+    }
+    
+    .stTextArea > div > div {
+        background: white;
+        border: 2px solid #ced4da;
+        border-radius: 8px;
+    }
+    
+    /* Labels mais visíveis */
+    .stSelectbox > label,
+    .stTextInput > label,
+    .stTextArea > label,
+    .stSlider > label {
+        color: #2c3e50 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Melhorar contraste do slider */
+    .stSlider > div > div > div > div {
+        background: #007bff;
+    }
+    
+    /* Informações melhor visíveis */
+    .stInfo {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460 !important;
+    }
+    
+    .stSuccess {
         background: #d4edda;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #28a745;
-        margin: 1rem 0;
+        border: 1px solid #c3e6cb;
+        color: #155724 !important;
     }
     
-    /* Warning alert */
-    .warning-alert {
+    .stWarning {
         background: #fff3cd;
-        color: #856404;
+        border: 1px solid #ffeaa7;
+        color: #856404 !important;
+    }
+    
+    .stError {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24 !important;
+    }
+    
+    /* Melhorar métricas do Streamlit */
+    [data-testid="metric-container"] {
+        background: white;
+        border: 1px solid #e0e0e0;
         padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #ffc107;
-        margin: 1rem 0;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    [data-testid="metric-container"] > div {
+        color: #2c3e50 !important;
+    }
+    
+    /* Texto da descrição mais legível */
+    .stTextArea textarea {
+        color: #2c3e50 !important;
+        background: white !important;
+        border: 2px solid #ced4da !important;
+    }
+    
+    /* Progress bar mais visível */
+    .stProgress > div > div {
+        background: #007bff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -179,8 +360,6 @@ CATEGORIAS = {
 def carregar_formularios_analisados():
     """Carrega lista de formulários já analisados"""
     try:
-        import requests
-        # Tentar carregar do cache do Streamlit
         if hasattr(st.session_state, 'formularios_analisados'):
             return st.session_state.formularios_analisados
         return {}
@@ -456,7 +635,7 @@ def main():
             
             # Descrição
             st.markdown("**📄 Descrição da Atividade:**")
-            st.text_area("Conteúdo", value=forms_text, height=200, disabled=True, label_visibility="collapsed")
+            st.text_area("Conteúdo do formulário", value=forms_text, height=200, disabled=True, label_visibility="collapsed")
         
         with col_direita:
             st.markdown("""
