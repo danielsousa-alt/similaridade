@@ -54,7 +54,7 @@ st.markdown("""
     /* FORÇAR TODOS OS ELEMENTOS PARA TEMA CLARO */
     div, p, span, label, h1, h2, h3, h4, h5, h6, section, article {
         background-color: inherit !important;
-        color: #000000 !important;
+        color: #484D50 !important;
     }
     
     /* HEADER SIMPLES E LIMPO */
@@ -86,32 +86,32 @@ st.markdown("""
     /* CARDS SIMPLES */
     .card-white {
         background: #ffffff !important;
-        border: 2px solid #34495e !important;
+        border: 1px solid #ddd !important;
         border-radius: 8px;
         padding: 1.5rem;
         margin: 1rem 0;
-        color: #000000 !important;
+        color: #484D50 !important;
     }
     
     .card-white h3 {
-        color: #2c3e50 !important;
+        color: #484D50 !important;
         margin: 0 0 1rem 0;
         font-weight: bold;
     }
     
     .card-white p {
-        color: #34495e !important;
+        color: #484D50 !important;
         margin: 0.5rem 0;
     }
     
     /* CARD DE USUÁRIO */
     .user-welcome {
         background: #f8f9fa !important;
-        border: 2px solid #27ae60 !important;
+        border: 1px solid #ddd !important;
         border-radius: 8px;
         padding: 1.5rem;
         margin: 1rem 0;
-        color: #000000 !important;
+        color: #484D50 !important;
     }
     
     .user-welcome h3 {
@@ -121,55 +121,55 @@ st.markdown("""
     }
     
     .user-welcome p {
-        color: #2c3e50 !important;
+        color: #484D50 !important;
         margin: 0;
     }
     
     /* INPUTS COM MÁXIMO CONTRASTE */
     .stSelectbox > div > div {
         background: #ffffff !important;
-        border: 3px solid #000000 !important;
+        border: 1px solid #ddd !important;
         border-radius: 5px;
-        color: #000000 !important;
+        color: #484D50 !important;
     }
     
     .stSelectbox > div > div > div {
-        color: #000000 !important;
+        color: #484D50 !important;
         background: #ffffff !important;
     }
     
     .stTextInput > div > div {
         background: #ffffff !important;
-        border: 3px solid #000000 !important;
+        border: 1px solid #ddd !important;
         border-radius: 5px;
-        color: #000000 !important;
+        color: #484D50 !important;
     }
     
     .stTextInput input {
-        color: #000000 !important;
+        color: #484D50 !important;
         background: #ffffff !important;
     }
     
     .stTextArea > div > div {
         background: #ffffff !important;
-        border: 3px solid #000000 !important;
+        border: 1px solid #ddd !important;
         border-radius: 5px;
     }
     
     .stTextArea textarea {
         background: #ffffff !important;
-        color: #000000 !important;
+        color: #484D50 !important;
         font-size: 14px;
     }
     
     .stNumberInput > div > div {
         background: #ffffff !important;
-        border: 3px solid #000000 !important;
+        border: 1px solid #ddd !important;
         border-radius: 5px;
     }
     
     .stNumberInput input {
-        color: #000000 !important;
+        color: #484D50 !important;
         background: #ffffff !important;
     }
     
@@ -179,7 +179,7 @@ st.markdown("""
     .stTextArea > label,
     .stSlider > label,
     .stNumberInput > label {
-        color: #000000 !important;
+        color: #484D50 !important;
         font-weight: bold !important;
         font-size: 1rem !important;
     }
@@ -187,8 +187,8 @@ st.markdown("""
     /* BOTÕES COM CONTRASTE */
     .stButton > button {
         background: #ffffff !important;
-        color: #2c3e50 !important;
-        border: 3px solid #2c3e50 !important;
+        color: #484D50 !important;
+        border: 1px solid #ddd !important;
         border-radius: 5px;
         padding: 0.5rem 1.5rem;
         font-weight: bold;
@@ -196,32 +196,32 @@ st.markdown("""
     }
     
     .stButton > button:hover {
-        background: #2c3e50 !important;
-        color: #ffffff !important;
+        background: #f8f9fa !important;
+        color: #484D50 !important;
     }
     
     .stButton > button[kind="primary"] {
         background: #3498db !important;
         color: #ffffff !important;
-        border: 3px solid #3498db !important;
+        border: 1px solid #3498db !important;
     }
     
     .stButton > button[kind="primary"]:hover {
         background: #2980b9 !important;
-        border: 3px solid #2980b9 !important;
+        border: 1px solid #2980b9 !important;
     }
     
     /* MÉTRICAS CONTRASTADAS */
     [data-testid="metric-container"] {
         background: #ffffff !important;
-        border: 2px solid #000000 !important;
+        border: 1px solid #ddd !important;
         border-radius: 8px;
         padding: 1rem;
-        color: #000000 !important;
+        color: #484D50 !important;
     }
     
     [data-testid="metric-container"] * {
-        color: #000000 !important;
+        color: #484D50 !important;
     }
     
     /* ALERTAS STREAMLIT */
@@ -426,7 +426,7 @@ def main():
     st.markdown("""
     <div class="header-container">
         <h1 class="header-title">Classificador Manual Inteligente</h1>
-        <p class="header-subtitle">Sistema para classificação humana e re-treinamento do modelo - SEBRAE</p>
+        <p class="header-subtitle">Sistema para classificação humana e re-treinamento do modelo de similaridade de ROPA/RAT - IDP</p>
     </div>
     """, unsafe_allow_html=True)
     
