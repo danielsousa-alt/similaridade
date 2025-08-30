@@ -1,0 +1,12 @@
+# Dependências mínimas para Streamlit Cloud
+streamlit>=1.49.0
+pandas>=1.5.0
+polars>=0.20.0
+numpy>=1.21.0
+pathlib2>=2.3.0
+
+# Para processamento de dados
+scikit-learn>=1.0.0
+
+# Opcional: se usar plotly para gráficos
+plotly>=5.0.0
