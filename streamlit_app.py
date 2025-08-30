@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Classificador Manual - Versão Clean e Profissional
+Classificador Manual - Versão Final com Tema Forçado
 Sistema para classificação humana e re-treinamento do modelo
 """
 
@@ -10,13 +10,12 @@ import os
 from datetime import datetime
 from pathlib import Path
 import json
-import base64
 
 # ========================================
 # CONFIGURAÇÃO E ESTILO
 # ========================================
 
-# Configuração da página
+# Configuração da página com tema forçado
 st.set_page_config(
     page_title="Classificador Manual - Sebrae",
     page_icon="🧠",
@@ -24,230 +23,234 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS clean com fundo branco e texto escuro
+# CSS para forçar completamente tema claro
 st.markdown("""
 <style>
-    /* RESET E BASE */
+    /* RESET COMPLETO - FORÇA TEMA CLARO */
+    * {
+        color-scheme: light !important;
+    }
+    
+    html, body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        color-scheme: light !important;
+    }
+    
     .stApp {
         background-color: #ffffff !important;
-        color: #2c3e50 !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #000000 !important;
+        color-scheme: light !important;
     }
     
     .main .block-container {
         background-color: #ffffff !important;
+        color: #000000 !important;
         padding-top: 2rem;
         padding-bottom: 2rem;
         max-width: 1200px;
     }
     
-    /* HEADER PRINCIPAL */
-    .main-header {
-        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    /* FORÇAR TODOS OS ELEMENTOS PARA TEMA CLARO */
+    div, p, span, label, h1, h2, h3, h4, h5, h6, section, article {
+        background-color: inherit !important;
+        color: #000000 !important;
+    }
+    
+    /* HEADER SIMPLES E LIMPO */
+    .header-container {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
         padding: 2rem;
-        border-radius: 8px;
+        border-radius: 10px;
         color: white;
         margin-bottom: 2rem;
         text-align: center;
-        box-shadow: 0 2px 10px rgba(44, 62, 80, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
-    .logo-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .main-header h1 {
+    .header-title {
         color: white !important;
+        font-size: 2.5rem;
+        font-weight: bold;
         margin: 0;
-        font-size: 2.2rem;
-        font-weight: 600;
-        letter-spacing: -0.02em;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
     
-    .main-header p {
+    .header-subtitle {
         color: #ecf0f1 !important;
-        margin: 0.5rem 0 0 0;
         font-size: 1.1rem;
-        opacity: 0.9;
+        margin: 0.5rem 0 0 0;
+        opacity: 0.95;
     }
     
-    /* CARDS LIMPOS */
-    .card {
-        background: #ffffff;
-        border: 1px solid #e1e8ed;
+    /* CARDS SIMPLES */
+    .card-white {
+        background: #ffffff !important;
+        border: 2px solid #34495e !important;
         border-radius: 8px;
         padding: 1.5rem;
         margin: 1rem 0;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        color: #000000 !important;
     }
     
-    .card h3 {
+    .card-white h3 {
         color: #2c3e50 !important;
         margin: 0 0 1rem 0;
-        font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: bold;
     }
     
-    .card p {
+    .card-white p {
         color: #34495e !important;
         margin: 0.5rem 0;
-        line-height: 1.5;
-    }
-    
-    .card strong {
-        color: #2c3e50 !important;
-        font-weight: 600;
     }
     
     /* CARD DE USUÁRIO */
-    .user-card {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-left: 4px solid #27ae60;
+    .user-welcome {
+        background: #f8f9fa !important;
+        border: 2px solid #27ae60 !important;
         border-radius: 8px;
         padding: 1.5rem;
         margin: 1rem 0;
+        color: #000000 !important;
     }
     
-    .user-card h3 {
+    .user-welcome h3 {
         color: #27ae60 !important;
         margin: 0 0 0.5rem 0;
-        font-weight: 600;
+        font-weight: bold;
     }
     
-    .user-card p {
-        color: #34495e !important;
+    .user-welcome p {
+        color: #2c3e50 !important;
         margin: 0;
     }
     
-    /* ALERTAS */
-    .alert-success {
-        background: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724 !important;
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-    
-    .alert-success h3 {
-        color: #155724 !important;
-        margin: 0 0 0.5rem 0;
-        font-weight: 600;
-    }
-    
-    /* INPUTS LIMPOS */
+    /* INPUTS COM MÁXIMO CONTRASTE */
     .stSelectbox > div > div {
         background: #ffffff !important;
-        border: 2px solid #34495e !important;
-        border-radius: 6px;
-        font-size: 1rem;
+        border: 3px solid #000000 !important;
+        border-radius: 5px;
+        color: #000000 !important;
     }
     
-    .stSelectbox > div > div:focus-within {
-        border-color: #3498db !important;
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    .stSelectbox > div > div > div {
+        color: #000000 !important;
+        background: #ffffff !important;
     }
     
     .stTextInput > div > div {
         background: #ffffff !important;
-        border: 2px solid #34495e !important;
-        border-radius: 6px;
+        border: 3px solid #000000 !important;
+        border-radius: 5px;
+        color: #000000 !important;
     }
     
-    .stTextInput > div > div:focus-within {
-        border-color: #3498db !important;
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    .stTextInput input {
+        color: #000000 !important;
+        background: #ffffff !important;
     }
     
     .stTextArea > div > div {
         background: #ffffff !important;
-        border: 2px solid #34495e !important;
-        border-radius: 6px;
-    }
-    
-    .stTextArea > div > div:focus-within {
-        border-color: #3498db !important;
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        border: 3px solid #000000 !important;
+        border-radius: 5px;
     }
     
     .stTextArea textarea {
         background: #ffffff !important;
-        color: #2c3e50 !important;
+        color: #000000 !important;
         font-size: 14px;
-        line-height: 1.5;
     }
     
     .stNumberInput > div > div {
         background: #ffffff !important;
-        border: 2px solid #34495e !important;
-        border-radius: 6px;
+        border: 3px solid #000000 !important;
+        border-radius: 5px;
     }
     
     .stNumberInput input {
-        color: #2c3e50 !important;
+        color: #000000 !important;
         background: #ffffff !important;
     }
     
-    /* LABELS */
+    /* LABELS ESCUROS */
     .stSelectbox > label,
     .stTextInput > label,
     .stTextArea > label,
     .stSlider > label,
     .stNumberInput > label {
-        color: #2c3e50 !important;
-        font-weight: 600 !important;
+        color: #000000 !important;
+        font-weight: bold !important;
         font-size: 1rem !important;
-        margin-bottom: 0.5rem !important;
     }
     
-    /* BOTÕES LIMPOS */
+    /* BOTÕES COM CONTRASTE */
     .stButton > button {
         background: #ffffff !important;
-        color: #34495e !important;
-        border: 2px solid #34495e !important;
-        border-radius: 6px;
+        color: #2c3e50 !important;
+        border: 3px solid #2c3e50 !important;
+        border-radius: 5px;
         padding: 0.5rem 1.5rem;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.2s;
     }
     
     .stButton > button:hover {
-        background: #34495e !important;
+        background: #2c3e50 !important;
         color: #ffffff !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(52, 73, 94, 0.3);
     }
     
     .stButton > button[kind="primary"] {
         background: #3498db !important;
         color: #ffffff !important;
-        border: 2px solid #3498db !important;
+        border: 3px solid #3498db !important;
     }
     
     .stButton > button[kind="primary"]:hover {
         background: #2980b9 !important;
-        border: 2px solid #2980b9 !important;
-        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        border: 3px solid #2980b9 !important;
     }
     
-    /* MÉTRICAS */
+    /* MÉTRICAS CONTRASTADAS */
     [data-testid="metric-container"] {
-        background: #ffffff;
-        border: 1px solid #e1e8ed;
-        padding: 1rem;
+        background: #ffffff !important;
+        border: 2px solid #000000 !important;
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 1rem;
+        color: #000000 !important;
     }
     
-    [data-testid="metric-container"] > div {
-        color: #2c3e50 !important;
+    [data-testid="metric-container"] * {
+        color: #000000 !important;
+    }
+    
+    /* ALERTAS STREAMLIT */
+    .stInfo {
+        background: #e3f2fd !important;
+        border: 2px solid #1976d2 !important;
+        color: #0d47a1 !important;
+        border-radius: 5px;
+    }
+    
+    .stSuccess {
+        background: #e8f5e8 !important;
+        border: 2px solid #388e3c !important;
+        color: #1b5e20 !important;
+        border-radius: 5px;
+    }
+    
+    .stWarning {
+        background: #fff8e1 !important;
+        border: 2px solid #f57c00 !important;
+        color: #e65100 !important;
+        border-radius: 5px;
+    }
+    
+    .stError {
+        background: #ffebee !important;
+        border: 2px solid #d32f2f !important;
+        color: #b71c1c !important;
+        border-radius: 5px;
     }
     
     /* SLIDER */
@@ -255,91 +258,26 @@ st.markdown("""
         background: #3498db !important;
     }
     
-    /* ALERTAS DO STREAMLIT */
-    .stInfo {
-        background: #e3f2fd !important;
-        border: 1px solid #bbdefb !important;
-        color: #0d47a1 !important;
-        border-radius: 6px;
+    /* FORÇAR SIDEBAR CLARA */
+    .css-1d391kg {
+        background: #f8f9fa !important;
+        color: #000000 !important;
     }
     
-    .stSuccess {
-        background: #e8f5e8 !important;
-        border: 1px solid #c8e6c9 !important;
-        color: #2e7d32 !important;
-        border-radius: 6px;
-    }
-    
-    .stWarning {
-        background: #fff8e1 !important;
-        border: 1px solid #ffecb3 !important;
-        color: #f57f17 !important;
-        border-radius: 6px;
-    }
-    
-    .stError {
-        background: #ffebee !important;
-        border: 1px solid #ffcdd2 !important;
-        color: #c62828 !important;
-        border-radius: 6px;
-    }
-    
-    /* NAVIGATION BAR */
-    .nav-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
+    /* SUCCESS ALERT CUSTOMIZADO */
+    .success-box {
+        background: #d4edda !important;
+        border: 2px solid #28a745 !important;
+        color: #155724 !important;
+        padding: 1.5rem;
         border-radius: 8px;
-        padding: 1rem;
         margin: 1rem 0;
     }
     
-    /* FORMULÁRIO ATUAL */
-    .form-info {
-        background: #ffffff;
-        border: 1px solid #e1e8ed;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .form-info h3 {
-        color: #2c3e50 !important;
-        margin: 0 0 1rem 0;
-        font-weight: 600;
-        font-size: 1.2rem;
-    }
-    
-    /* CLASSIFICAÇÃO SECTION */
-    .classification-section {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .classification-section h4 {
-        color: #2c3e50 !important;
-        margin: 0 0 1rem 0;
-        font-weight: 600;
-    }
-    
-    /* RESPONSIVIDADE */
-    @media (max-width: 768px) {
-        .main-header h1 {
-            font-size: 1.8rem;
-        }
-        
-        .main .block-container {
-            padding: 1rem;
-        }
-        
-        .card, .user-card, .form-info, .classification-section {
-            padding: 1rem;
-        }
+    .success-box h3 {
+        color: #155724 !important;
+        margin: 0 0 0.5rem 0;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -417,22 +355,6 @@ CATEGORIAS = {
 # FUNÇÕES AUXILIARES
 # ========================================
 
-def get_logo_svg():
-    """Retorna SVG da logo como string"""
-    return """
-    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 35c0-15 10-25 25-25s25 10 25 25c5-10 15-15 25-15 8 0 15 7 15 15 0 5-2 9-5 12 3 3 5 7 5 12 0 8-7 15-15 15-5 0-9-2-12-5-3 8-11 14-20 14-12 0-22-10-22-22 0-3 1-6 2-8-10-2-18-10-18-18z" fill="white" stroke="#ecf0f1" stroke-width="2"/>
-      <circle cx="35" cy="45" r="3" fill="#3498db"/>
-      <circle cx="55" cy="40" r="3" fill="#3498db"/>
-      <circle cx="45" cy="55" r="3" fill="#3498db"/>
-      <circle cx="65" cy="50" r="3" fill="#3498db"/>
-      <line x1="35" y1="45" x2="45" y2="55" stroke="#3498db" stroke-width="2"/>
-      <line x1="45" y1="55" x2="55" y2="40" stroke="#3498db" stroke-width="2"/>
-      <line x1="55" y1="40" x2="65" y2="50" stroke="#3498db" stroke-width="2"/>
-      <line x1="35" y1="45" x2="55" y2="40" stroke="#3498db" stroke-width="2"/>
-    </svg>
-    """
-
 @st.cache_data
 def carregar_dados():
     """Carrega dados dos formulários"""
@@ -500,17 +422,11 @@ def main():
         st.info("Certifique-se de que o arquivo está na raiz do repositório")
         st.stop()
 
-    # Header com logo
-    logo_svg = get_logo_svg()
-    st.markdown(f"""
-    <div class="main-header">
-        <div class="logo-container">
-            {logo_svg}
-            <div>
-                <h1>Classificador Manual Inteligente</h1>
-                <p>Sistema para classificação humana e re-treinamento do modelo - SEBRAE</p>
-            </div>
-        </div>
+    # Header simples sem HTML complexo
+    st.markdown("""
+    <div class="header-container">
+        <h1 class="header-title">Classificador Manual Inteligente</h1>
+        <p class="header-subtitle">Sistema para classificação humana e re-treinamento do modelo - SEBRAE</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -542,11 +458,11 @@ def main():
     # Usuário autenticado
     usuario = st.session_state.usuario
     
-    # Boas-vindas
+    # Boas-vindas simples
     col1, col2 = st.columns([3, 1])
     with col1:
         st.markdown(f"""
-        <div class="user-card">
+        <div class="user-welcome">
             <h3>Bem-vindo, {usuario}!</h3>
             <p>Vamos classificar alguns formulários para melhorar o modelo de IA?</p>
         </div>
@@ -572,7 +488,7 @@ def main():
     total_analisados = len([f for f, users in analisados.items() if usuario in users])
     contribuicoes_usuario = len([c for c in st.session_state.get('contribuicoes', []) if c.get('usuario') == usuario])
     
-    # Métricas
+    # Métricas simples
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -591,7 +507,7 @@ def main():
     # Verificar se há formulários disponíveis
     if df_disponivel.empty:
         st.markdown("""
-        <div class="alert-success">
+        <div class="success-box">
             <h3>Parabéns!</h3>
             <p>Você já analisou todos os formulários disponíveis no sistema!</p>
         </div>
@@ -662,9 +578,9 @@ def main():
         col_esquerda, col_direita = st.columns([1.2, 1])
         
         with col_esquerda:
-            # Informações do formulário
+            # Informações do formulário - simples
             st.markdown(f"""
-            <div class="form-info">
+            <div class="card-white">
                 <h3>{extrair_nome_atividade(forms_text)}</h3>
                 <p><strong>Formulário:</strong> {forms_number}</p>
             </div>
@@ -676,8 +592,8 @@ def main():
         
         with col_direita:
             st.markdown("""
-            <div class="classification-section">
-                <h4>Sua Classificação</h4>
+            <div class="card-white">
+                <h3>Sua Classificação</h3>
             </div>
             """, unsafe_allow_html=True)
             
