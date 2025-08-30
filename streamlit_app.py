@@ -17,7 +17,7 @@ import json
 
 # Configuração da página com tema forçado
 st.set_page_config(
-    page_title="Classificador Manual - Sebrae",
+    page_title="Sistema de Classificação Humana - ROPA/RAT",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="collapsed"
