@@ -17,7 +17,7 @@ import json
 
 # Configuração da página com tema forçado
 st.set_page_config(
-    page_title="Classificador Manual - Sebrae",
+    page_title="Classificador Manual - IDP",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -57,7 +57,7 @@ st.markdown("""
         color: #484D50 !important;
     }
     
-    /* HEADER SIMPLES E LIMPO */
+    /* HEADER ORIGINAL COM AJUSTES DE CONTRASTE */
     .header-container {
         background: linear-gradient(135deg, #004987 0%, #0056a3 100%);
         padding: 2rem;
@@ -66,21 +66,25 @@ st.markdown("""
         margin-bottom: 2rem;
         text-align: center;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #ffffff;
     }
     
     .header-title {
-        color: white !important;
+        color: #ffffff !important;
         font-size: 2.5rem;
         font-weight: bold;
         margin: 0;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-rendering: optimizeLegibility;
     }
     
     .header-subtitle {
         color: #ffffff !important;
         font-size: 1.1rem;
         margin: 0.5rem 0 0 0;
-        opacity: 0.95;
+        opacity: 1;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        text-rendering: optimizeLegibility;
     }
     
     /* CARDS SIMPLES */
@@ -125,7 +129,7 @@ st.markdown("""
         margin: 0;
     }
     
-    /* INPUTS COM MÁXIMO CONTRASTE */
+    /* INPUTS COM CONTRASTE */
     .stSelectbox > div > div {
         background: #ffffff !important;
         border: 1px solid #ddd !important;
@@ -290,12 +294,6 @@ st.markdown("""
         background: #3498db !important;
     }
     
-    /* FORÇAR SIDEBAR CLARA */
-    .css-1d391kg {
-        background: #f8f9fa !important;
-        color: #000000 !important;
-    }
-    
     /* SUCCESS ALERT CUSTOMIZADO */
     .success-box {
         background: #d4edda !important;
@@ -318,20 +316,16 @@ st.markdown("""
 st.markdown("""
 <script>
 function aplicarEstilosBotoes() {
-    // Aguardar o DOM estar pronto
     setTimeout(function() {
-        // Encontrar todos os botões
         const botoes = document.querySelectorAll('button');
         
         botoes.forEach(function(botao) {
             const texto = botao.textContent || botao.innerText;
             
-            // Aplicar estilo ao botão "Pular"
             if (texto.includes('Pular')) {
                 botao.classList.add('btn-pular');
             }
             
-            // Aplicar estilo ao botão "Trocar Usuário"
             if (texto.includes('Trocar Usuário')) {
                 botao.classList.add('btn-trocar-usuario');
             }
@@ -339,10 +333,7 @@ function aplicarEstilosBotoes() {
     }, 100);
 }
 
-// Executar quando a página carrega
 document.addEventListener('DOMContentLoaded', aplicarEstilosBotoes);
-
-// Executar periodicamente para capturar botões criados dinamicamente
 setInterval(aplicarEstilosBotoes, 500);
 </script>
 """, unsafe_allow_html=True)
@@ -664,6 +655,40 @@ def obter_classificacao_ia(forms_number, df_classificacoes):
     
     return categoria_ia, confianca, threshold_met
 
+def mostrar_estatisticas_retreinamento():
+    """Mostra estatísticas dos dados coletados para retreinamento"""
+    try:
+        csv_file = Path("data/human_labels/human_classifications.csv")
+        if csv_file.exists():
+            df = pd.read_csv(csv_file)
+            
+            st.subheader("📊 Estatísticas para Retreinamento")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Total Classificações", len(df))
+            
+            with col2:
+                aprovacoes_ia = len(df[df['approved_ai'] == True])
+                st.metric("Aprovações IA", aprovacoes_ia)
+            
+            with col3:
+                alta_confianca = len(df[df['high_confidence'] == True])
+                st.metric("Alta Confiança", alta_confianca)
+            
+            with col4:
+                discordancias = len(df[df['disagreement_flag'] == True])
+                st.metric("Discordâncias", discordancias)
+            
+            # Mostrar distribuição por categoria
+            st.markdown("**Distribuição por Categoria:**")
+            dist_categoria = df['human_category'].value_counts()
+            st.bar_chart(dist_categoria)
+    
+    except Exception as e:
+        st.info("Ainda não há dados de retreinamento salvos")
+
 # ========================================
 # FUNÇÃO PRINCIPAL
 # ========================================
@@ -743,7 +768,7 @@ def main():
     # Estatísticas
     analisados = st.session_state.get('formularios_analisados', {})
     total_analisados = len([f for f, users in analisados.items() if usuario in users])
-    contribuicoes_usuario = len([c for c in st.session_state.get('contribuicoes', []) if c.get('usuario') == usuario])
+    contribuicoes_csv = contar_contribuicoes_csv(usuario)
     
     # Métricas simples
     col1, col2, col3, col4 = st.columns(4)
@@ -759,8 +784,6 @@ def main():
         st.metric("Você Analisou", f"{total_analisados:,}", f"{progresso:.1f}% do total")
     
     with col4:
-        # Contar contribuições do arquivo CSV (dados persistentes)
-        contribuicoes_csv = contar_contribuicoes_csv(usuario)
         st.metric("Contribuições Salvas", f"{contribuicoes_csv:,}", help="Dados salvos permanentemente para retreinamento")
     
     # Verificar se há formulários disponíveis
@@ -791,40 +814,6 @@ def main():
         
         # Mostrar estatísticas de retreinamento
         mostrar_estatisticas_retreinamento()
-
-def mostrar_estatisticas_retreinamento():
-    """Mostra estatísticas dos dados coletados para retreinamento"""
-    try:
-        csv_file = Path("data/human_labels/human_classifications.csv")
-        if csv_file.exists():
-            df = pd.read_csv(csv_file)
-            
-            st.subheader("📊 Estatísticas para Retreinamento")
-            
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric("Total Classificações", len(df))
-            
-            with col2:
-                aprovacoes_ia = len(df[df['approved_ai'] == True])
-                st.metric("Aprovações IA", aprovacoes_ia)
-            
-            with col3:
-                alta_confianca = len(df[df['high_confidence'] == True])
-                st.metric("Alta Confiança", alta_confianca)
-            
-            with col4:
-                discordancias = len(df[df['disagreement_flag'] == True])
-                st.metric("Discordâncias", discordancias)
-            
-            # Mostrar distribuição por categoria
-            st.markdown("**Distribuição por Categoria:**")
-            dist_categoria = df['human_category'].value_counts()
-            st.bar_chart(dist_categoria)
-    
-    except Exception as e:
-        st.info("Ainda não há dados de retreinamento salvos")
         
         return
     
