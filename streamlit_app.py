@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Classificador Manual - Versão com Tema Claro Forçado
-Sistema para classificação humana de formulários
+Classificador Manual - Versão Clean e Profissional
+Sistema para classificação humana e re-treinamento do modelo
 """
 
 import streamlit as st
@@ -10,293 +10,336 @@ import os
 from datetime import datetime
 from pathlib import Path
 import json
+import base64
 
 # ========================================
 # CONFIGURAÇÃO E ESTILO
 # ========================================
 
-# Configuração da página com tema claro
+# Configuração da página
 st.set_page_config(
-    page_title="Classificador Manual",
-    page_icon="🎯",
+    page_title="Classificador Manual - Sebrae",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# CSS para forçar tema claro e máximo contraste
+# CSS clean com fundo branco e texto escuro
 st.markdown("""
 <style>
-    /* FORÇAR TEMA CLARO */
+    /* RESET E BASE */
     .stApp {
         background-color: #ffffff !important;
-        color: #000000 !important;
+        color: #2c3e50 !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    /* Sidebar também clara */
-    .css-1d391kg {
-        background-color: #f8f9fa !important;
-    }
-    
-    /* Container principal */
     .main .block-container {
         background-color: #ffffff !important;
-        color: #000000 !important;
-        padding-top: 1rem;
-        padding-bottom: 1rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1200px;
     }
     
-    /* TODOS OS TEXTOS EM PRETO */
-    div, p, span, label, h1, h2, h3, h4, h5, h6 {
-        color: #000000 !important;
-    }
-    
-    /* Header principal */
+    /* HEADER PRINCIPAL */
     .main-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
         padding: 2rem;
-        border-radius: 15px;
+        border-radius: 8px;
         color: white;
         margin-bottom: 2rem;
         text-align: center;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 10px rgba(44, 62, 80, 0.1);
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
     }
     
     .main-header h1 {
         color: white !important;
         margin: 0;
-        font-size: 2.5rem;
-        font-weight: bold;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-size: 2.2rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
     }
     
     .main-header p {
-        color: white !important;
+        color: #ecf0f1 !important;
         margin: 0.5rem 0 0 0;
-        opacity: 0.95;
         font-size: 1.1rem;
+        opacity: 0.9;
     }
     
-    /* Cards com fundo branco e texto preto */
-    .info-card {
-        background: #ffffff !important;
-        padding: 2rem;
-        border-radius: 12px;
-        border: 2px solid #e0e0e0;
+    /* CARDS LIMPOS */
+    .card {
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        border-radius: 8px;
+        padding: 1.5rem;
         margin: 1rem 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
     
-    .info-card h3 {
-        color: #1a1a1a !important;
-        margin-top: 0;
-        font-size: 1.3rem;
-        font-weight: bold;
+    .card h3 {
+        color: #2c3e50 !important;
+        margin: 0 0 1rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
     }
     
-    .info-card p {
-        color: #2c2c2c !important;
+    .card p {
+        color: #34495e !important;
         margin: 0.5rem 0;
-        font-size: 1rem;
+        line-height: 1.5;
     }
     
-    .info-card strong {
-        color: #000000 !important;
-        font-weight: bold;
+    .card strong {
+        color: #2c3e50 !important;
+        font-weight: 600;
     }
     
-    /* Card do usuário */
+    /* CARD DE USUÁRIO */
     .user-card {
-        background: #f8f9fa !important;
-        padding: 2rem;
-        border-radius: 12px;
-        border-left: 5px solid #28a745;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-left: 4px solid #27ae60;
+        border-radius: 8px;
+        padding: 1.5rem;
         margin: 1rem 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
-    .user-card h3, .user-card h4 {
-        color: #1e7e34 !important;
-        margin-top: 0;
-        font-weight: bold;
+    .user-card h3 {
+        color: #27ae60 !important;
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
     }
     
     .user-card p {
-        color: #2c2c2c !important;
+        color: #34495e !important;
+        margin: 0;
     }
     
-    /* Alertas */
-    .success-alert {
-        background: #d4edda !important;
+    /* ALERTAS */
+    .alert-success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
         color: #155724 !important;
-        padding: 2rem;
-        border-radius: 12px;
-        border: 2px solid #c3e6cb;
+        padding: 1.5rem;
+        border-radius: 8px;
         margin: 1rem 0;
     }
     
-    .success-alert h3 {
+    .alert-success h3 {
         color: #155724 !important;
-        margin-top: 0;
-        font-weight: bold;
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
     }
     
-    /* INPUTS E FORMULÁRIOS */
+    /* INPUTS LIMPOS */
     .stSelectbox > div > div {
         background: #ffffff !important;
-        border: 3px solid #333333 !important;
-        border-radius: 8px;
-        color: #000000 !important;
+        border: 2px solid #34495e !important;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+    
+    .stSelectbox > div > div:focus-within {
+        border-color: #3498db !important;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
     
     .stTextInput > div > div {
         background: #ffffff !important;
-        border: 3px solid #333333 !important;
-        border-radius: 8px;
-        color: #000000 !important;
+        border: 2px solid #34495e !important;
+        border-radius: 6px;
+    }
+    
+    .stTextInput > div > div:focus-within {
+        border-color: #3498db !important;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
     
     .stTextArea > div > div {
         background: #ffffff !important;
-        border: 3px solid #333333 !important;
-        border-radius: 8px;
+        border: 2px solid #34495e !important;
+        border-radius: 6px;
+    }
+    
+    .stTextArea > div > div:focus-within {
+        border-color: #3498db !important;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     }
     
     .stTextArea textarea {
         background: #ffffff !important;
-        color: #000000 !important;
-        border: none !important;
-        font-size: 14px !important;
+        color: #2c3e50 !important;
+        font-size: 14px;
+        line-height: 1.5;
     }
     
-    /* LABELS DOS INPUTS */
+    .stNumberInput > div > div {
+        background: #ffffff !important;
+        border: 2px solid #34495e !important;
+        border-radius: 6px;
+    }
+    
+    .stNumberInput input {
+        color: #2c3e50 !important;
+        background: #ffffff !important;
+    }
+    
+    /* LABELS */
     .stSelectbox > label,
     .stTextInput > label,
     .stTextArea > label,
     .stSlider > label,
     .stNumberInput > label {
-        color: #000000 !important;
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
+        color: #2c3e50 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
         margin-bottom: 0.5rem !important;
     }
     
-    /* BOTÕES */
+    /* BOTÕES LIMPOS */
     .stButton > button {
         background: #ffffff !important;
-        color: #007bff !important;
-        border: 3px solid #007bff !important;
-        border-radius: 25px;
-        padding: 0.75rem 2rem;
-        font-weight: bold;
-        font-size: 1rem;
-        transition: all 0.3s;
+        color: #34495e !important;
+        border: 2px solid #34495e !important;
+        border-radius: 6px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
     }
     
     .stButton > button:hover {
-        background: #007bff !important;
+        background: #34495e !important;
         color: #ffffff !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(52, 73, 94, 0.3);
     }
     
-    /* Botão primário */
     .stButton > button[kind="primary"] {
-        background: #007bff !important;
+        background: #3498db !important;
         color: #ffffff !important;
-        border: 3px solid #007bff !important;
+        border: 2px solid #3498db !important;
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: #2980b9 !important;
+        border: 2px solid #2980b9 !important;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
     }
     
     /* MÉTRICAS */
     [data-testid="metric-container"] {
-        background: #ffffff !important;
-        border: 2px solid #333333 !important;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     [data-testid="metric-container"] > div {
-        color: #000000 !important;
-    }
-    
-    [data-testid="metric-container"] [data-testid="metric-container-0"] {
-        color: #000000 !important;
-    }
-    
-    /* ALERTAS DO STREAMLIT */
-    .stInfo {
-        background: #cce7ff !important;
-        border: 2px solid #0066cc !important;
-        color: #003366 !important;
-        border-radius: 8px;
-    }
-    
-    .stSuccess {
-        background: #d4edda !important;
-        border: 2px solid #28a745 !important;
-        color: #155724 !important;
-        border-radius: 8px;
-    }
-    
-    .stWarning {
-        background: #fff3cd !important;
-        border: 2px solid #ffc107 !important;
-        color: #856404 !important;
-        border-radius: 8px;
-    }
-    
-    .stError {
-        background: #f8d7da !important;
-        border: 2px solid #dc3545 !important;
-        color: #721c24 !important;
-        border-radius: 8px;
+        color: #2c3e50 !important;
     }
     
     /* SLIDER */
     .stSlider > div > div > div > div {
-        background: #007bff !important;
+        background: #3498db !important;
     }
     
-    /* DATAFRAME */
-    .stDataFrame {
-        background: #ffffff !important;
-        border: 2px solid #333333 !important;
+    /* ALERTAS DO STREAMLIT */
+    .stInfo {
+        background: #e3f2fd !important;
+        border: 1px solid #bbdefb !important;
+        color: #0d47a1 !important;
+        border-radius: 6px;
+    }
+    
+    .stSuccess {
+        background: #e8f5e8 !important;
+        border: 1px solid #c8e6c9 !important;
+        color: #2e7d32 !important;
+        border-radius: 6px;
+    }
+    
+    .stWarning {
+        background: #fff8e1 !important;
+        border: 1px solid #ffecb3 !important;
+        color: #f57f17 !important;
+        border-radius: 6px;
+    }
+    
+    .stError {
+        background: #ffebee !important;
+        border: 1px solid #ffcdd2 !important;
+        color: #c62828 !important;
+        border-radius: 6px;
+    }
+    
+    /* NAVIGATION BAR */
+    .nav-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
         border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
     }
     
-    /* MARKDOWN */
-    .stMarkdown {
-        color: #000000 !important;
-    }
-    
-    /* SIDEBAR */
-    .css-1d391kg {
-        background: #f8f9fa !important;
-        color: #000000 !important;
-    }
-    
-    /* NUMBER INPUT */
-    .stNumberInput > div > div {
-        background: #ffffff !important;
-        border: 3px solid #333333 !important;
+    /* FORMULÁRIO ATUAL */
+    .form-info {
+        background: #ffffff;
+        border: 1px solid #e1e8ed;
         border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
     }
     
-    .stNumberInput input {
-        color: #000000 !important;
-        background: #ffffff !important;
+    .form-info h3 {
+        color: #2c3e50 !important;
+        margin: 0 0 1rem 0;
+        font-weight: 600;
+        font-size: 1.2rem;
     }
     
-    /* FORÇAR COR PRETA EM TUDO */
-    * {
-        color: #000000 !important;
+    /* CLASSIFICAÇÃO SECTION */
+    .classification-section {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
     }
     
-    /* Exceções para elementos que DEVEM ser coloridos */
-    .main-header, .main-header h1, .main-header p,
-    .stButton > button[kind="primary"],
-    .user-card h3, .user-card h4 {
-        color: inherit !important;
+    .classification-section h4 {
+        color: #2c3e50 !important;
+        margin: 0 0 1rem 0;
+        font-weight: 600;
+    }
+    
+    /* RESPONSIVIDADE */
+    @media (max-width: 768px) {
+        .main-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .main .block-container {
+            padding: 1rem;
+        }
+        
+        .card, .user-card, .form-info, .classification-section {
+            padding: 1rem;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -305,12 +348,11 @@ st.markdown("""
 # CONFIGURAÇÕES DE DADOS
 # ========================================
 
-# Arquivo de dados
 DADOS_FILE = "dados_embbeding.csv"
 
-# Categorias organizadas
+# Categorias sem emojis
 CATEGORIAS = {
-    "🏢 Administração e RH": [
+    "Administração e RH": [
         "Gestão de folha de pagamento",
         "Gestão de benefícios", 
         "Gestão de entrega de equipamentos",
@@ -322,7 +364,7 @@ CATEGORIAS = {
         "Gestão de exames ocupacionais",
         "Outros - Administração e RH"
     ],
-    "👥 Atendimento": [
+    "Atendimento": [
         "Atendimento de solicitações de titulares de dados",
         "Atendimento colaboradores",
         "Atendimento ao Cliente",
@@ -332,7 +374,7 @@ CATEGORIAS = {
         "Atendimento Remoto",
         "Outros - Atendimento"
     ],
-    "⚖️ Auditoria, Compliance e Jurídico": [
+    "Auditoria, Compliance e Jurídico": [
         "Auditoria Externa",
         "Auditoria Interna",
         "Compliance normativo",
@@ -341,7 +383,7 @@ CATEGORIAS = {
         "Controle interno",
         "Outros - Auditoria e Compliance"
     ],
-    "💻 Dados, TI e BI": [
+    "Dados, TI e BI": [
         "Desenvolvimento de ETLs que contenham dados pessoais",
         "Painéis Data Sebrae",
         "Projetos Data Science",
@@ -350,21 +392,21 @@ CATEGORIAS = {
         "Backup e recuperação",
         "Outros - Dados e TI"
     ],
-    "📚 Educação e Consultoria": [
+    "Educação e Consultoria": [
         "Capacitação interna",
         "Capacitação/treinamento",
         "Consultoria",
         "Educação empreendedora",
         "Outros - Educação"
     ],
-    "📈 Gestão, Estratégia e Processos": [
+    "Gestão, Estratégia e Processos": [
         "Planejamento estratégico",
         "Gestão de processos",
         "Gestão de projetos",
         "Governança corporativa",
         "Outros - Gestão"
     ],
-    "🔧 Outras Atividades": [
+    "Outras Atividades": [
         "Atividades diversas",
         "Não classificado",
         "Outros"
@@ -375,6 +417,22 @@ CATEGORIAS = {
 # FUNÇÕES AUXILIARES
 # ========================================
 
+def get_logo_svg():
+    """Retorna SVG da logo como string"""
+    return """
+    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 35c0-15 10-25 25-25s25 10 25 25c5-10 15-15 25-15 8 0 15 7 15 15 0 5-2 9-5 12 3 3 5 7 5 12 0 8-7 15-15 15-5 0-9-2-12-5-3 8-11 14-20 14-12 0-22-10-22-22 0-3 1-6 2-8-10-2-18-10-18-18z" fill="white" stroke="#ecf0f1" stroke-width="2"/>
+      <circle cx="35" cy="45" r="3" fill="#3498db"/>
+      <circle cx="55" cy="40" r="3" fill="#3498db"/>
+      <circle cx="45" cy="55" r="3" fill="#3498db"/>
+      <circle cx="65" cy="50" r="3" fill="#3498db"/>
+      <line x1="35" y1="45" x2="45" y2="55" stroke="#3498db" stroke-width="2"/>
+      <line x1="45" y1="55" x2="55" y2="40" stroke="#3498db" stroke-width="2"/>
+      <line x1="55" y1="40" x2="65" y2="50" stroke="#3498db" stroke-width="2"/>
+      <line x1="35" y1="45" x2="55" y2="40" stroke="#3498db" stroke-width="2"/>
+    </svg>
+    """
+
 @st.cache_data
 def carregar_dados():
     """Carrega dados dos formulários"""
@@ -382,7 +440,7 @@ def carregar_dados():
         df = pd.read_csv(DADOS_FILE)
         return df
     except Exception as e:
-        st.error(f"❌ Erro ao carregar dados: {e}")
+        st.error(f"Erro ao carregar dados: {e}")
         return pd.DataFrame()
 
 def filtrar_formularios_nao_analisados(df, usuario):
@@ -391,8 +449,8 @@ def filtrar_formularios_nao_analisados(df, usuario):
         return df.copy()
     
     analisados = st.session_state.formularios_analisados
-    
     forms_analisados_usuario = []
+    
     for forms_number, usuarios in analisados.items():
         if usuario in usuarios:
             forms_analisados_usuario.append(int(forms_number))
@@ -405,7 +463,6 @@ def salvar_contribuicao(dados_contribuicao):
     """Salva contribuição no session state"""
     if 'contribuicoes' not in st.session_state:
         st.session_state.contribuicoes = []
-    
     st.session_state.contribuicoes.append(dados_contribuicao)
 
 def salvar_formulario_analisado(forms_number, usuario):
@@ -420,9 +477,9 @@ def salvar_formulario_analisado(forms_number, usuario):
         st.session_state.formularios_analisados[str(forms_number)].append(usuario)
 
 def extrair_nome_atividade(forms_text):
-    """Extrai nome da atividade de forma inteligente"""
+    """Extrai nome da atividade"""
     if pd.isna(forms_text) or not forms_text:
-        return "📋 Sem nome definido"
+        return "Sem nome definido"
     
     partes = str(forms_text).split(';')
     nome = partes[0].strip().lstrip(' .,;-')
@@ -430,7 +487,7 @@ def extrair_nome_atividade(forms_text):
     if len(nome) > 80:
         nome = nome[:77] + "..."
     
-    return f"📋 {nome}" if nome else "📋 Sem nome definido"
+    return nome if nome else "Sem nome definido"
 
 # ========================================
 # FUNÇÃO PRINCIPAL
@@ -439,15 +496,21 @@ def extrair_nome_atividade(forms_text):
 def main():
     # Verificar se arquivo de dados existe
     if not Path(DADOS_FILE).exists():
-        st.error("❌ Arquivo 'dados_embbeding.csv' não encontrado!")
-        st.info("📁 Certifique-se de que o arquivo está na raiz do repositório")
+        st.error("Arquivo 'dados_embbeding.csv' não encontrado!")
+        st.info("Certifique-se de que o arquivo está na raiz do repositório")
         st.stop()
 
-    # Header
-    st.markdown("""
+    # Header com logo
+    logo_svg = get_logo_svg()
+    st.markdown(f"""
     <div class="main-header">
-        <h1>🎯 Classificador Manual Inteligente</h1>
-        <p>Sistema para classificação humana e re-treinamento do modelo</p>
+        <div class="logo-container">
+            {logo_svg}
+            <div>
+                <h1>Classificador Manual Inteligente</h1>
+                <p>Sistema para classificação humana e re-treinamento do modelo - SEBRAE</p>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -456,7 +519,7 @@ def main():
         st.session_state.usuario_autenticado = False
     
     if not st.session_state.usuario_autenticado:
-        st.markdown("### 👤 Identificação do Usuário")
+        st.markdown("### Identificação do Usuário")
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
@@ -467,12 +530,12 @@ def main():
             )
             
             if usuario and len(usuario.strip()) >= 2:
-                if st.button("🚀 Começar Classificação", type="primary", use_container_width=True):
+                if st.button("Começar Classificação", type="primary", use_container_width=True):
                     st.session_state.usuario = usuario.strip().title()
                     st.session_state.usuario_autenticado = True
                     st.rerun()
             elif usuario:
-                st.warning("⚠️ Nome deve ter pelo menos 2 caracteres")
+                st.warning("Nome deve ter pelo menos 2 caracteres")
         
         return
     
@@ -484,13 +547,13 @@ def main():
     with col1:
         st.markdown(f"""
         <div class="user-card">
-            <h3>👋 Bem-vindo, {usuario}!</h3>
+            <h3>Bem-vindo, {usuario}!</h3>
             <p>Vamos classificar alguns formulários para melhorar o modelo de IA?</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        if st.button("🚪 Trocar Usuário", help="Clique para trocar de usuário"):
+        if st.button("Trocar Usuário", help="Clique para trocar de usuário"):
             for key in st.session_state.keys():
                 del st.session_state[key]
             st.rerun()
@@ -498,7 +561,7 @@ def main():
     # Carregar dados
     df = carregar_dados()
     if df.empty:
-        st.error("❌ Não foi possível carregar os dados do sistema")
+        st.error("Não foi possível carregar os dados do sistema")
         return
     
     # Filtrar formulários disponíveis
@@ -509,26 +572,27 @@ def main():
     total_analisados = len([f for f, users in analisados.items() if usuario in users])
     contribuicoes_usuario = len([c for c in st.session_state.get('contribuicoes', []) if c.get('usuario') == usuario])
     
+    # Métricas
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("📊 Total de Formulários", f"{len(df):,}")
+        st.metric("Total de Formulários", f"{len(df):,}")
     
     with col2:
-        st.metric("🎯 Disponíveis para Você", f"{len(df_disponivel):,}")
+        st.metric("Disponíveis para Você", f"{len(df_disponivel):,}")
     
     with col3:
         progresso = (total_analisados / len(df)) * 100 if len(df) > 0 else 0
-        st.metric("✅ Você Analisou", f"{total_analisados:,}", f"{progresso:.1f}% do total")
+        st.metric("Você Analisou", f"{total_analisados:,}", f"{progresso:.1f}% do total")
     
     with col4:
-        st.metric("💾 Contribuições Salvas", f"{contribuicoes_usuario:,}")
+        st.metric("Contribuições Salvas", f"{contribuicoes_usuario:,}")
     
     # Verificar se há formulários disponíveis
     if df_disponivel.empty:
         st.markdown("""
-        <div class="success-alert">
-            <h3>🎉 Parabéns!</h3>
+        <div class="alert-success">
+            <h3>Parabéns!</h3>
             <p>Você já analisou todos os formulários disponíveis no sistema!</p>
         </div>
         """, unsafe_allow_html=True)
@@ -538,13 +602,13 @@ def main():
         suas_contrib = [c for c in contribuicoes if c.get('usuario') == usuario]
         
         if suas_contrib:
-            st.subheader("📊 Suas Contribuições")
+            st.subheader("Suas Contribuições")
             df_contrib = pd.DataFrame(suas_contrib)
             st.dataframe(df_contrib, use_container_width=True)
             
             csv = df_contrib.to_csv(index=False)
             st.download_button(
-                label="📥 Baixar Minhas Contribuições (CSV)",
+                label="Baixar Minhas Contribuições (CSV)",
                 data=csv,
                 file_name=f"contribuicoes_{usuario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv"
@@ -561,19 +625,19 @@ def main():
     col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
     
     with col1:
-        if st.button("⬅️ Anterior", disabled=st.session_state.indice_atual == 0):
+        if st.button("Anterior", disabled=st.session_state.indice_atual == 0):
             st.session_state.indice_atual = max(0, st.session_state.indice_atual - 1)
             st.rerun()
     
     with col2:
-        if st.button("⏭️ Pular", help="Pular este formulário"):
+        if st.button("Pular", help="Pular este formulário"):
             st.session_state.indice_atual = min(len(df_disponivel) - 1, st.session_state.indice_atual + 1)
             st.rerun()
     
     with col3:
         progresso = st.session_state.indice_atual + 1
         total = len(df_disponivel)
-        st.info(f"📋 Formulário {progresso} de {total}")
+        st.info(f"Formulário {progresso} de {total}")
     
     with col4:
         ir_para = st.number_input("Ir para:", min_value=1, max_value=len(df_disponivel), 
@@ -584,7 +648,7 @@ def main():
             st.rerun()
     
     with col5:
-        if st.button("➡️ Próximo", disabled=st.session_state.indice_atual >= len(df_disponivel) - 1):
+        if st.button("Próximo", disabled=st.session_state.indice_atual >= len(df_disponivel) - 1):
             st.session_state.indice_atual = min(len(df_disponivel) - 1, st.session_state.indice_atual + 1)
             st.rerun()
     
@@ -600,26 +664,26 @@ def main():
         with col_esquerda:
             # Informações do formulário
             st.markdown(f"""
-            <div class="info-card">
+            <div class="form-info">
                 <h3>{extrair_nome_atividade(forms_text)}</h3>
-                <p><strong>🆔 Formulário:</strong> {forms_number}</p>
+                <p><strong>Formulário:</strong> {forms_number}</p>
             </div>
             """, unsafe_allow_html=True)
             
             # Descrição
-            st.markdown("**📄 Descrição da Atividade:**")
+            st.markdown("**Descrição da Atividade:**")
             st.text_area("Conteúdo do formulário", value=forms_text, height=200, disabled=True, label_visibility="collapsed")
         
         with col_direita:
             st.markdown("""
-            <div class="user-card">
-                <h4>👤 Sua Classificação</h4>
+            <div class="classification-section">
+                <h4>Sua Classificação</h4>
             </div>
             """, unsafe_allow_html=True)
             
             # Seleção de categoria
             categoria_selecionada = st.selectbox(
-                "🏷️ Categoria Principal:",
+                "Categoria Principal:",
                 list(CATEGORIAS.keys()),
                 key=f"categoria_{forms_number}",
                 help="Selecione a categoria que melhor descreve esta atividade"
@@ -627,7 +691,7 @@ def main():
             
             if categoria_selecionada:
                 subcategoria_selecionada = st.selectbox(
-                    "🏷️ Subcategoria:",
+                    "Subcategoria:",
                     CATEGORIAS[categoria_selecionada],
                     key=f"subcategoria_{forms_number}",
                     help="Selecione a subcategoria específica"
@@ -637,7 +701,7 @@ def main():
             
             # Nível de certeza
             certeza = st.slider(
-                "🎯 Seu nível de certeza:",
+                "Seu nível de certeza:",
                 0.0, 1.0, 0.8, 0.1,
                 key=f"certeza_{forms_number}",
                 format="%.0f%%",
@@ -646,7 +710,7 @@ def main():
             
             # Comentários
             comentarios = st.text_area(
-                "💭 Comentários (opcional):",
+                "Comentários (opcional):",
                 placeholder="Ex: 'Categoria óbvia pelo contexto' ou 'Difícil de classificar'",
                 key=f"comentarios_{forms_number}",
                 help="Adicione observações que possam ajudar outros analistas"
@@ -658,13 +722,13 @@ def main():
         
         with col2:
             if categoria_selecionada and subcategoria_selecionada:
-                if st.button("💾 Salvar Classificação e Continuar", type="primary", use_container_width=True):
+                if st.button("Salvar Classificação e Continuar", type="primary", use_container_width=True):
                     # Preparar dados
                     contribuicao = {
                         'forms_number': forms_number,
-                        'forms_name': extrair_nome_atividade(forms_text).replace('📋 ', ''),
+                        'forms_name': extrair_nome_atividade(forms_text),
                         'descricao_atividade': forms_text,
-                        'categoria_usuario': categoria_selecionada.replace('🏢 ', '').replace('👥 ', '').replace('⚖️ ', '').replace('💻 ', '').replace('📚 ', '').replace('📈 ', '').replace('🔧 ', ''),
+                        'categoria_usuario': categoria_selecionada,
                         'subcategoria_usuario': subcategoria_selecionada,
                         'nivel_certeza': certeza,
                         'usuario': usuario,
@@ -677,7 +741,7 @@ def main():
                     salvar_formulario_analisado(forms_number, usuario)
                     
                     # Feedback visual
-                    st.success("✅ Classificação salva com sucesso!")
+                    st.success("Classificação salva com sucesso!")
                     
                     # Avançar automaticamente
                     if st.session_state.indice_atual < len(df_disponivel) - 1:
@@ -685,10 +749,10 @@ def main():
                         st.rerun()
                     else:
                         st.balloons()
-                        st.success("🎉 Você concluiu todos os formulários disponíveis!")
+                        st.success("Você concluiu todos os formulários disponíveis!")
                         st.rerun()
             else:
-                st.warning("⚠️ Por favor, selecione categoria e subcategoria antes de salvar")
+                st.warning("Por favor, selecione categoria e subcategoria antes de salvar")
 
 if __name__ == "__main__":
     main()
