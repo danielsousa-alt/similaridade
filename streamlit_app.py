@@ -17,7 +17,7 @@ import json
 
 # Configuração da página com tema forçado
 st.set_page_config(
-    page_title="Sistema de Classificação Humana - ROPA/RAT",
+    page_title="Sistema de Classificação Humana por Similaridade- ROPA/RAT",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -28,19 +28,17 @@ st.markdown("""
 <style>
     /* RESET COMPLETO - FORÇA TEMA CLARO */
     * {
-        color-scheme: light !important;
+        box-sizing: border-box;
     }
     
     html, body {
         background-color: #ffffff !important;
         color: #000000 !important;
-        color-scheme: light !important;
     }
     
     .stApp {
         background-color: #ffffff !important;
         color: #000000 !important;
-        color-scheme: light !important;
     }
     
     .main .block-container {
@@ -75,16 +73,16 @@ st.markdown("""
         font-weight: bold;
         margin: 0;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        text-rendering: optimizeLegibility;
+
     }
     
     .header-subtitle {
         color: #ffffff !important;
         font-size: 1.1rem;
         margin: 0.5rem 0 0 0;
-        opacity: 1;
+        opacity: 0.95;
         text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        text-rendering: optimizeLegibility;
+
     }
     
     /* CARDS SIMPLES COM FUNDO CINZA PADRÃO COMENTÁRIOS */
@@ -1043,21 +1041,36 @@ def mostrar_estatisticas_retreinamento():
                 st.metric("Total Classificações", len(df))
             
             with col2:
-                aprovacoes_ia = len(df[df['approved_ai'] == True])
+                # Verificar se coluna existe antes de usar
+                if 'aprovou_ia' in df.columns:
+                    aprovacoes_ia = len(df[df['aprovou_ia']])
+                else:
+                    aprovacoes_ia = 0
                 st.metric("Aprovações IA", aprovacoes_ia)
             
             with col3:
-                alta_confianca = len(df[df['high_confidence'] == True])
+                # Contar classificações com alta certeza (> 0.8)
+                if 'nivel_certeza' in df.columns:
+                    alta_confianca = len(df[df['nivel_certeza'] > 0.8])
+                else:
+                    alta_confianca = 0
                 st.metric("Alta Confiança", alta_confianca)
             
             with col4:
-                discordancias = len(df[df['disagreement_flag'] == True])
+                # Contar discordâncias (quando categoria IA difere da humana)
+                discordancias = 0
+                if 'categoria_ia' in df.columns and 'categoria_usuario' in df.columns:
+                    mask = (df['categoria_ia'].notna()) & (df['categoria_usuario'].notna())
+                    discordancias = len(df[mask & (df['categoria_ia'] != df['categoria_usuario'])])
                 st.metric("Discordâncias", discordancias)
             
             # Mostrar distribuição por categoria
             st.markdown("**Distribuição por Categoria:**")
-            dist_categoria = df['human_category'].value_counts()
-            st.bar_chart(dist_categoria)
+            if 'categoria_usuario' in df.columns:
+                dist_categoria = df['categoria_usuario'].value_counts()
+                st.bar_chart(dist_categoria)
+            else:
+                st.info("Dados de categoria não disponíveis")
     
     except Exception as e:
         st.info("Ainda não há dados de retreinamento salvos")
